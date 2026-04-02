@@ -209,6 +209,7 @@ class YokoUI:
         table.add_row("/commands", "/cmds", "查看命令列表")
         table.add_row("/status", "/s", "查看状态")
         table.add_row("/version", "/v", "版本信息")
+        table.add_row("/model", "/m", "切换模型")
         table.add_row("/clear", "/cls", "清屏")
         table.add_row("/exit", "/q", "退出")
         
@@ -332,6 +333,57 @@ class YokoUI:
         except ImportError:
             self.console.print("[red]❌ 宠物系统未加载[/red]")
     
+    def show_model(self, args=None):
+        """显示/切换模型"""
+        from src.api_config import get_model
+        import requests
+        
+        current = get_model()
+        
+        if args and len(args) > 0:
+            # 切换模型
+            new_model = args[0]
+            
+            # 更新 .env 文件
+            env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+            try:
+                with open(env_path, 'r') as f:
+                    lines = f.readlines()
+                
+                with open(env_path, 'w') as f:
+                    for line in lines:
+                        if line.startswith('OPENROUTER_MODEL='):
+                            f.write(f'OPENROUTER_MODEL={new_model}\n')
+                        else:
+                            f.write(line)
+                
+                self.console.print(Panel(
+                    f"[green]✅ 已切换到:[/green] [cyan]{new_model}[/cyan]\n\n"
+                    "[dim]重启 YOKO Code 后生效[/dim]",
+                    title="🔄 切换模型",
+                    border_style=Theme.PRIMARY
+                ))
+            except Exception as e:
+                self.console.print(f"[red]❌ 切换失败: {e}[/red]")
+        else:
+            # 显示当前模型和可用模型
+            model_panel = Panel(
+                f"[bold]当前模型:[/bold] [cyan]{current}[/cyan]\n\n"
+                "[bold]切换命令:[/bold]\n"
+                "  /model <模型名>    切换模型\n\n"
+                "[bold]推荐免费模型:[/bold]\n"
+                "  [green]qwen/qwen3.6-plus:free[/green]          最强免费\n"
+                "  qwen/qwen3.6-plus-preview:free  Preview\n"
+                "  minimax/minimax-m2.5:free       MiniMax\n"
+                "  stepfun/step-3.5-flash:free     阶跃星辰\n"
+                "  openai/gpt-oss-120b:free        OpenAI开源",
+                title="🧠 模型管理",
+                border_style=Theme.PRIMARY,
+                padding=(1, 2)
+            )
+            
+            self.console.print(model_panel)
+    
     def handle_command(self, user_input):
         parts = user_input.split()
         cmd = parts[0][1:]
@@ -354,6 +406,8 @@ class YokoUI:
             'pet': lambda: self.show_pet_status() if not args else self.handle_pet(args),
             'version': lambda: self.console.print("[cyan]YOKO Code v1.0.0[/cyan]"),
             'v': lambda: self.console.print("[cyan]YOKO Code v1.0.0[/cyan]"),
+            'model': lambda: self.show_model(args),
+            'm': lambda: self.show_model(args),
             'exit': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),
             'quit': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),
             'q': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),

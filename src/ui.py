@@ -345,15 +345,15 @@ class YokoUI:
             new_model = args[0]
             self._switch_model(new_model)
         else:
-            # 交互式选择
+            # 交互式选择 - 只显示可用模型
             free_models = [
                 ("qwen/qwen3.6-plus:free", "Qwen 3.6 Plus", "最强免费，100万上下文"),
-                ("qwen/qwen3.6-plus-preview:free", "Qwen 3.6 Preview", "Preview 版本"),
+                ("qwen/qwen3-coder:free", "Qwen3 Coder 480B", "代码专用，262K上下文"),
+                ("qwen/qwen3-next-80b-a3b-instruct:free", "Qwen3 Next 80B", "高效推理"),
                 ("minimax/minimax-m2.5:free", "MiniMax M2.5", "中文优秀"),
                 ("stepfun/step-3.5-flash:free", "阶跃星辰", "国产之光"),
-                ("openai/gpt-oss-120b:free", "OpenAI 开源", "120B 参数"),
-                ("nvidia/nemotron-3-super:free", "NVIDIA Super", "262K 上下文"),
-                ("arcee-ai/trinity-large-preview:free", "Trinity Large", "131K 上下文"),
+                ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B", "Meta开源"),
+                ("google/gemma-3-27b-it:free", "Gemma 3 27B", "Google开源"),
             ]
             
             self.console.print()

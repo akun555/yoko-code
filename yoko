@@ -4,7 +4,7 @@
 YOKO_HOME="/root/.openclaw/workspace/yoko-code"
 
 # 设置 API Key
-export OPENROUTER_API_KEY="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"
+export OPENROUTER_API_KEY="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"
 
 # 显示横幅
 show_banner() {

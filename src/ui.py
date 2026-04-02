@@ -193,6 +193,7 @@ class YokoUI:
         """显示命令"""
         self.console.print(Rule("命令列表", style=Theme.PRIMARY))
         
+        # 只显示真正实现的命令
         table = Table(
             show_header=True,
             header_style=f"bold {Theme.PRIMARY}",
@@ -200,11 +201,27 @@ class YokoUI:
             padding=(0, 1)
         )
         table.add_column("命令", style=Theme.COMMAND, width=15)
+        table.add_column("缩写", style=Theme.MUTED, width=8)
         table.add_column("说明", style="white")
         
-        for name, cmd in self.commands.items():
-            desc = cmd.get('description', '') if isinstance(cmd, dict) else ''
-            table.add_row(f"/{name}", desc[:40] if desc else '')
+        table.add_row("/help", "/h", "显示帮助")
+        table.add_row("/tools", "/t", "查看工具列表")
+        table.add_row("/commands", "/cmds", "查看命令列表")
+        table.add_row("/status", "/s", "查看状态")
+        table.add_row("/version", "/v", "版本信息")
+        table.add_row("/clear", "/cls", "清屏")
+        table.add_row("/exit", "/q", "退出")
+        
+        table.add_row()
+        table.add_row("[bold magenta]宠物系统[/bold magenta]", "", "")
+        table.add_row("/pet", "", "查看宠物状态")
+        table.add_row("/pet adopt", "", "领养宠物 [物种] [名字]")
+        table.add_row("/pet feed", "", "喂食")
+        table.add_row("/pet play", "", "玩耍")
+        table.add_row("/pet train", "", "训练")
+        table.add_row("/pet rest", "", "休息")
+        table.add_row("/pet skills", "", "查看技能")
+        table.add_row("/pet help", "", "让宠物帮忙 [任务]")
         
         self.console.print(table)
         self.console.print()
@@ -320,21 +337,33 @@ class YokoUI:
         cmd = parts[0][1:]
         args = parts[1:] if len(parts) > 1 else []
         
+        # 只处理真正实现的命令
         handlers = {
             'help': self.show_help,
+            'h': self.show_help,
+            '?': self.show_help,
             'tools': self.show_tools,
+            't': self.show_tools,
             'commands': self.show_commands,
+            'cmds': self.show_commands,
             'status': self.show_status,
+            'stats': self.show_status,
+            's': self.show_status,
             'clear': self.clear,
+            'cls': self.clear,
             'pet': lambda: self.show_pet_status() if not args else self.handle_pet(args),
+            'version': lambda: self.console.print("[cyan]YOKO Code v1.0.0[/cyan]"),
+            'v': lambda: self.console.print("[cyan]YOKO Code v1.0.0[/cyan]"),
             'exit': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),
             'quit': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),
+            'q': lambda: (self.console.print("\n[bold cyan]👋 再见坤哥！[/bold cyan]"), sys.exit(0)),
         }
         
         if cmd in handlers:
             handlers[cmd]()
         else:
             self.console.print(f"[red]❌ 未知命令: /{cmd}[/red]")
+            self.console.print("[dim]输入 /help 查看可用命令[/dim]")
     
     def handle_tool(self, user_input):
         parts = user_input.split()

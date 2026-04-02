@@ -334,55 +334,100 @@ class YokoUI:
             self.console.print("[red]❌ 宠物系统未加载[/red]")
     
     def show_model(self, args=None):
-        """显示/切换模型"""
+        """显示/切换模型 - 交互式选择"""
         from src.api_config import get_model
         import requests
         
         current = get_model()
         
         if args and len(args) > 0:
-            # 切换模型
+            # 直接切换：/model <模型名>
             new_model = args[0]
-            
-            # 更新 .env 文件
-            env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
-            try:
-                with open(env_path, 'r') as f:
-                    lines = f.readlines()
-                
-                with open(env_path, 'w') as f:
-                    for line in lines:
-                        if line.startswith('OPENROUTER_MODEL='):
-                            f.write(f'OPENROUTER_MODEL={new_model}\n')
-                        else:
-                            f.write(line)
-                
-                self.console.print(Panel(
-                    f"[green]✅ 已切换到:[/green] [cyan]{new_model}[/cyan]\n\n"
-                    "[dim]重启 YOKO Code 后生效[/dim]",
-                    title="🔄 切换模型",
-                    border_style=Theme.PRIMARY
-                ))
-            except Exception as e:
-                self.console.print(f"[red]❌ 切换失败: {e}[/red]")
+            self._switch_model(new_model)
         else:
-            # 显示当前模型和可用模型
-            model_panel = Panel(
-                f"[bold]当前模型:[/bold] [cyan]{current}[/cyan]\n\n"
-                "[bold]切换命令:[/bold]\n"
-                "  /model <模型名>    切换模型\n\n"
-                "[bold]推荐免费模型:[/bold]\n"
-                "  [green]qwen/qwen3.6-plus:free[/green]          最强免费\n"
-                "  qwen/qwen3.6-plus-preview:free  Preview\n"
-                "  minimax/minimax-m2.5:free       MiniMax\n"
-                "  stepfun/step-3.5-flash:free     阶跃星辰\n"
-                "  openai/gpt-oss-120b:free        OpenAI开源",
-                title="🧠 模型管理",
-                border_style=Theme.PRIMARY,
-                padding=(1, 2)
+            # 交互式选择
+            free_models = [
+                ("qwen/qwen3.6-plus:free", "Qwen 3.6 Plus", "最强免费，100万上下文"),
+                ("qwen/qwen3.6-plus-preview:free", "Qwen 3.6 Preview", "Preview 版本"),
+                ("minimax/minimax-m2.5:free", "MiniMax M2.5", "中文优秀"),
+                ("stepfun/step-3.5-flash:free", "阶跃星辰", "国产之光"),
+                ("openai/gpt-oss-120b:free", "OpenAI 开源", "120B 参数"),
+                ("nvidia/nemotron-3-super:free", "NVIDIA Super", "262K 上下文"),
+                ("arcee-ai/trinity-large-preview:free", "Trinity Large", "131K 上下文"),
+            ]
+            
+            self.console.print()
+            self.console.print(Rule("🧠 模型管理", style=Theme.PRIMARY))
+            self.console.print()
+            
+            # 显示当前模型
+            self.console.print(f"  [bold]当前模型:[/bold] [cyan]{current}[/cyan]")
+            self.console.print()
+            
+            # 创建选择表格
+            table = Table(
+                show_header=True,
+                header_style=f"bold {Theme.PRIMARY}",
+                box=box.SIMPLE_HEAVY,
+                padding=(0, 2)
+            )
+            table.add_column("", style=Theme.ACCENT, width=4)
+            table.add_column("模型", style="white", width=35)
+            table.add_column("说明", style=Theme.MUTED)
+            
+            for i, (model_id, name, desc) in enumerate(free_models, 1):
+                is_current = "●" if model_id == current else " "
+                table.add_row(f" {i}.", f"{is_current} {name}", desc)
+            
+            self.console.print(table)
+            self.console.print()
+            
+            # 让用户选择
+            from rich.prompt import Prompt
+            choice = Prompt.ask(
+                "[bold green]选择模型[/bold green] [dim](输入数字，或 q 取消)[/dim]",
+                default="q"
             )
             
-            self.console.print(model_panel)
+            if choice.lower() == 'q':
+                self.console.print("[dim]已取消[/dim]")
+                return
+            
+            try:
+                idx = int(choice) - 1
+                if 0 <= idx < len(free_models):
+                    model_id = free_models[idx][0]
+                    self._switch_model(model_id)
+                else:
+                    self.console.print("[red]❌ 无效选择[/red]")
+            except ValueError:
+                self.console.print("[red]❌ 请输入数字[/red]")
+    
+    def _switch_model(self, model_id):
+        """切换模型"""
+        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+        try:
+            with open(env_path, 'r') as f:
+                lines = f.readlines()
+            
+            with open(env_path, 'w') as f:
+                for line in lines:
+                    if line.startswith('OPENROUTER_MODEL='):
+                        f.write(f'OPENROUTER_MODEL={model_id}\n')
+                    else:
+                        f.write(line)
+            
+            self.console.print()
+            self.console.print(Panel(
+                f"[green]✅ 已切换到:[/green] [cyan]{model_id}[/cyan]\n\n"
+                "[dim]重启 YOKO Code 后生效[/dim]",
+                title="🔄 切换成功",
+                border_style=Theme.SUCCESS,
+                padding=(1, 2)
+            ))
+            self.console.print()
+        except Exception as e:
+            self.console.print(f"[red]❌ 切换失败: {e}[/red]")
     
     def handle_command(self, user_input):
         parts = user_input.split()

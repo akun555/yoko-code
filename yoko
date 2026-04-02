@@ -1,0 +1,60 @@
+#!/bin/bash
+# YOKO Code - 坤哥专属 AI 编程助手
+
+YOKO_HOME="/root/.openclaw/workspace/yoko-code"
+
+# 设置 API Key
+export OPENROUTER_API_KEY="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"
+
+# 显示横幅
+show_banner() {
+    echo ""
+    echo " ╭────────────────────────────────────────╮"
+    echo " │                                        │"
+    echo " │   🚀 YOKO Code                         │"
+    echo " │   坤哥专属 AI 编程助手                   │"
+    echo " │                                        │"
+    echo " ╰────────────────────────────────────────╯"
+    echo ""
+}
+
+# 显示帮助
+show_help() {
+    echo "用法: yoko <命令> [参数]"
+    echo ""
+    echo "命令:"
+    echo "  chat              启动对话模式"
+    echo "  tools             查看可用工具"
+    echo "  commands          查看可用命令"
+    echo "  config            查看配置"
+    echo "  summary           查看项目概览"
+    echo "  pet               宠物系统"
+    echo ""
+    echo "示例:"
+    echo "  yoko chat         启动对话"
+    echo "  yoko tools        查看工具"
+    echo "  yoko pet          查看宠物"
+    echo ""
+}
+
+# 主逻辑
+cd "$YOKO_HOME"
+
+case "$1" in
+    "")
+        show_banner
+        show_help
+        ;;
+    "help"|"-h"|"--help")
+        show_banner
+        show_help
+        ;;
+    "chat")
+        show_banner
+        cd "$YOKO_HOME"
+        python3 -m src.ui
+        ;;
+    *)
+        python3 -m src.main "$@"
+        ;;
+esac

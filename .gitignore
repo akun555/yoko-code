@@ -1,10 +1,21 @@
+# Python
 __pycache__/
-archive/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Local runtime artifacts
+.env
+.port_sessions/
 .omx/
+.yoko-agents/
 .yokod-agents/
+archive/
+
 # Claude Code local artifacts
 .claude/settings.local.json
 .claude/sessions/
--e 
-# 环境变量
-.env
+
+# Rust
+rust/target/

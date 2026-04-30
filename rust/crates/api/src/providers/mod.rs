@@ -4,8 +4,8 @@ use std::pin::Pin;
 use crate::error::ApiError;
 use crate::types::{MessageRequest, MessageResponse};
 
-pub mod yoko_provider;
 pub mod openai_compat;
+pub mod yoko_provider;
 
 pub type ProviderFuture<'a, T> = Pin<Box<dyn Future<Output = Result<T, ApiError>> + Send + 'a>>;
 

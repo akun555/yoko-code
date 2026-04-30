@@ -9,8 +9,8 @@ pub use client::{
     resolve_startup_auth_source, MessageStream, OAuthTokenSet, ProviderClient,
 };
 pub use error::ApiError;
-pub use providers::yoko_provider::{AuthSource, ClawApiClient, ClawApiClient as ApiClient};
 pub use providers::openai_compat::{OpenAiCompatClient, OpenAiCompatConfig};
+pub use providers::yoko_provider::{AuthSource, ClawApiClient, ClawApiClient as ApiClient};
 pub use providers::{
     detect_provider_kind, max_tokens_for_model, resolve_model_alias, ProviderKind,
 };

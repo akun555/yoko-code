@@ -19,6 +19,7 @@ const SETTINGS_FILE_NAME: &str = "settings.json";
 const REGISTRY_FILE_NAME: &str = "installed.json";
 const MANIFEST_FILE_NAME: &str = "plugin.json";
 const MANIFEST_RELATIVE_PATH: &str = ".yoko-plugin/plugin.json";
+const LEGACY_MANIFEST_RELATIVE_PATH: &str = ".claw-plugin/plugin.json";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -1429,10 +1430,16 @@ fn plugin_manifest_path(root: &Path) -> Result<PathBuf, PluginError> {
         return Ok(packaged_path);
     }
 
+    let legacy_packaged_path = root.join(LEGACY_MANIFEST_RELATIVE_PATH);
+    if legacy_packaged_path.exists() {
+        return Ok(legacy_packaged_path);
+    }
+
     Err(PluginError::NotFound(format!(
-        "plugin manifest not found at {} or {}",
+        "plugin manifest not found at {}, {}, or {}",
         direct_path.display(),
-        packaged_path.display()
+        packaged_path.display(),
+        legacy_packaged_path.display()
     )))
 }
 

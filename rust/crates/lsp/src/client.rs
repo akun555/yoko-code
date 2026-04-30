@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::Arc;
 
 use lsp_types::{
     Diagnostic, GotoDefinitionResponse, Location, LocationLink, Position, PublishDiagnosticsParams,
@@ -15,12 +15,16 @@ use tokio::sync::{oneshot, Mutex};
 use crate::error::LspError;
 use crate::types::{LspServerConfig, SymbolLocation};
 
+type PendingRequestSender = oneshot::Sender<Result<Value, LspError>>;
+type PendingRequests = Arc<Mutex<BTreeMap<i64, PendingRequestSender>>>;
+type DiagnosticMap = Arc<Mutex<BTreeMap<String, Vec<Diagnostic>>>>;
+
 pub(crate) struct LspClient {
     config: LspServerConfig,
     writer: Mutex<BufWriter<ChildStdin>>,
     child: Mutex<Child>,
-    pending_requests: Arc<Mutex<BTreeMap<i64, oneshot::Sender<Result<Value, LspError>>>>>,
-    diagnostics: Arc<Mutex<BTreeMap<String, Vec<Diagnostic>>>>,
+    pending_requests: PendingRequests,
+    diagnostics: DiagnosticMap,
     open_documents: Mutex<BTreeMap<PathBuf, i32>>,
     next_request_id: AtomicI64,
 }
@@ -59,7 +63,7 @@ impl LspClient {
 
         client.spawn_reader(stdout);
         if let Some(stderr) = stderr {
-            client.spawn_stderr_drain(stderr);
+            Self::drain_stderr(stderr);
         }
         client.initialize().await?;
         Ok(client)
@@ -190,7 +194,9 @@ impl LspClient {
             Some(GotoDefinitionResponse::Scalar(location)) => {
                 location_to_symbol_locations(vec![location])
             }
-            Some(GotoDefinitionResponse::Array(locations)) => location_to_symbol_locations(locations),
+            Some(GotoDefinitionResponse::Array(locations)) => {
+                location_to_symbol_locations(locations)
+            }
             Some(GotoDefinitionResponse::Link(links)) => location_links_to_symbol_locations(links),
             None => Vec::new(),
         })
@@ -272,7 +278,8 @@ impl LspClient {
                     if notification.diagnostics.is_empty() {
                         diagnostics_map.remove(&notification.uri.to_string());
                     } else {
-                        diagnostics_map.insert(notification.uri.to_string(), notification.diagnostics);
+                        diagnostics_map
+                            .insert(notification.uri.to_string(), notification.diagnostics);
                     }
                 }
                 Ok::<(), LspError>(())
@@ -281,10 +288,7 @@ impl LspClient {
 
             if let Err(error) = result {
                 let mut pending = pending_requests.lock().await;
-                let drained = pending
-                    .iter()
-                    .map(|(id, _)| *id)
-                    .collect::<Vec<_>>();
+                let drained = pending.keys().copied().collect::<Vec<_>>();
                 for id in drained {
                     if let Some(sender) = pending.remove(&id) {
                         let _ = sender.send(Err(LspError::Protocol(error.to_string())));
@@ -294,7 +298,7 @@ impl LspClient {
         });
     }
 
-    fn spawn_stderr_drain<R>(&self, stderr: R)
+    fn drain_stderr<R>(stderr: R)
     where
         R: AsyncRead + Unpin + Send + 'static,
     {
@@ -448,7 +452,8 @@ fn location_to_symbol_locations(locations: Vec<Location>) -> Vec<SymbolLocation>
 }
 
 fn location_links_to_symbol_locations(links: Vec<LocationLink>) -> Vec<SymbolLocation> {
-    links.into_iter()
+    links
+        .into_iter()
         .filter_map(|link| {
             uri_to_path(&link.target_uri.to_string()).map(|path| SymbolLocation {
                 path,

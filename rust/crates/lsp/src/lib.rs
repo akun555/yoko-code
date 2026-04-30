@@ -41,6 +41,7 @@ mod tests {
         })
     }
 
+    #[allow(clippy::too_many_lines)]
     fn write_mock_server_script(root: &std::path::Path) -> PathBuf {
         let script_path = root.join("mock_lsp_server.py");
         fs::write(
@@ -192,7 +193,8 @@ while True:
         fs::create_dir_all(root.join("src")).expect("workspace root should exist");
         let script_path = write_mock_server_script(&root);
         let source_path = root.join("src").join("main.rs");
-        fs::write(&source_path, "fn main() {}\nlet value = 1;\n").expect("source file should exist");
+        fs::write(&source_path, "fn main() {}\nlet value = 1;\n")
+            .expect("source file should exist");
         let manager = LspManager::new(vec![LspServerConfig {
             name: "rust-analyzer".to_string(),
             command: python,
@@ -204,7 +206,10 @@ while True:
         }])
         .expect("manager should build");
         manager
-            .open_document(&source_path, &fs::read_to_string(&source_path).expect("source read should succeed"))
+            .open_document(
+                &source_path,
+                &fs::read_to_string(&source_path).expect("source read should succeed"),
+            )
             .await
             .expect("document should open");
         wait_for_diagnostics(&manager).await;
@@ -226,7 +231,10 @@ while True:
         // then
         assert_eq!(diagnostics.files.len(), 1);
         assert_eq!(diagnostics.total_diagnostics(), 1);
-        assert_eq!(diagnostics.files[0].diagnostics[0].severity, Some(DiagnosticSeverity::ERROR));
+        assert_eq!(
+            diagnostics.files[0].diagnostics[0].severity,
+            Some(DiagnosticSeverity::ERROR)
+        );
         assert_eq!(definitions.len(), 1);
         assert_eq!(definitions[0].start_line(), 1);
         assert_eq!(references.len(), 2);
@@ -246,7 +254,8 @@ while True:
         fs::create_dir_all(root.join("src")).expect("workspace root should exist");
         let script_path = write_mock_server_script(&root);
         let source_path = root.join("src").join("lib.rs");
-        fs::write(&source_path, "pub fn answer() -> i32 { 42 }\n").expect("source file should exist");
+        fs::write(&source_path, "pub fn answer() -> i32 { 42 }\n")
+            .expect("source file should exist");
         let manager = LspManager::new(vec![LspServerConfig {
             name: "rust-analyzer".to_string(),
             command: python,
@@ -258,7 +267,10 @@ while True:
         }])
         .expect("manager should build");
         manager
-            .open_document(&source_path, &fs::read_to_string(&source_path).expect("source read should succeed"))
+            .open_document(
+                &source_path,
+                &fs::read_to_string(&source_path).expect("source read should succeed"),
+            )
             .await
             .expect("document should open");
         wait_for_diagnostics(&manager).await;

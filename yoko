@@ -1,11 +1,14 @@
 #!/bin/bash
 # YOKO Code - 坤哥专属 AI 编程助手
 
-YOKO_HOME="/root/.openclaw/workspace/yoko-code"
+YOKO_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 从 .env 文件加载配置
+# 从 .env 文件加载配置（忽略注释和空行）
 if [ -f "$YOKO_HOME/.env" ]; then
-    export $(grep -v '^#' "$YOKO_HOME/.env" | xargs)
+    set -a
+    # shellcheck disable=SC1091
+    . "$YOKO_HOME/.env"
+    set +a
 fi
 
 # 显示横幅

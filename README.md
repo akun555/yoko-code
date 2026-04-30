@@ -5,182 +5,163 @@
 </p>
 
 <p align="center">
-  基于 Claude Code 架构的干净重写版本
+  Claude Code inspired 的本地编程 Agent 实验项目，当前主实现位于 Rust workspace。
 </p>
 
 ---
 
-## 📖 简介
+## 项目状态
 
-YOKO Code 是一个 AI 驱动的编程助手，参考了 Claude Code 的架构设计，采用 Python 实现。拥有美颜终端界面、AI 智能对话、电子宠物系统等特色功能。
+YOKO Code 目前包含两条实现线：
 
-## ✨ 功能特性
+| 路径 | 角色 | 状态 |
+|---|---|---|
+| `rust/` | 当前主产品面，包含 CLI、runtime、tools、commands、plugins、LSP 等模块 | 推荐优先使用 |
+| `src/` | Python 原型/移植工作区，保存命令与工具 surface 的镜像、审计和辅助 CLI | 可用于验证和参考 |
 
-- 🧠 **AI 智能对话** - OpenRouter 驱动，支持多种模型
-- 💻 **美颜终端界面** - 参考 Claude Code / Gemini CLI 风格
-- 🐾 **电子宠物系统** - 8种物种、稀有度、技能、任务帮忙
-- 🔧 **工具系统** - 读写文件、执行命令、搜索等
-- 📊 **状态面板** - 美观的树状结构显示
+> 说明：根目录的 `./yoko` 脚本保留为 Python 兼容入口；正式 CLI 建议从 `rust/` 构建运行。
 
-## 🚀 快速部署
+## 功能方向
 
-### 方法 1：克隆安装
+- AI 编程对话与本地 workspace 辅助
+- 文件读写、搜索、Shell 等工具调用能力
+- Slash command 命令体系
+- 会话、配置、权限与成本统计
+- 插件、skills、MCP/LSP 等扩展方向
+- Python 端提供 porting/parity 辅助检查
+
+## 快速开始：Rust CLI（推荐）
+
+### 1. 准备环境
+
+需要安装：
+
+- Rust stable toolchain
+- Cargo
+- 至少一个模型供应商的 API Key
+
+### 2. 配置模型凭据
+
+Anthropic 兼容模型：
 
 ```bash
-# 克隆仓库
+export ANTHROPIC_API_KEY="***"
+# 可选：自定义兼容 endpoint
+export ANTHROPIC_BASE_URL="https://api.anthropic.com"
+```
+
+Grok / xAI：
+
+```bash
+export XAI_API_KEY="***"
+# 可选
+export XAI_BASE_URL="https://api.x.ai"
+```
+
+### 3. 构建和运行
+
+```bash
 git clone https://github.com/akun555/yoko-code.git
+cd yoko-code/rust
+
+# 开发运行
+cargo run --bin yoko -- --help
+cargo run --bin yoko -- prompt "summarize this workspace"
+
+# 本地安装
+cargo install --path crates/claw-cli --locked
+
+yoko --help
+```
+
+## Python 兼容入口
+
+Python 入口主要用于原型、移植审计和 legacy UI：
+
+```bash
 cd yoko-code
+python -m pip install rich requests pytest
 
-# 安装依赖
-pip install rich requests
+# 查看 Python porting workspace 概览
+python -m src.main summary
 
-# 配置 API Key
-cat > .env << 'EOF'
-OPENROUTER_API_KEY=你的key
+# 运行 Python 测试
+python -m pytest -q
+
+# legacy chat UI
+cat > .env <<'EOF'
+OPENROUTER_API_KEY=***
 OPENROUTER_MODEL=qwen/qwen3.6-plus-preview:free
 EOF
 
-# 添加到 PATH（可选）
-echo 'export PATH="$PATH:$(pwd)"' >> ~/.bashrc
-source ~/.bashrc
-
-# 启动
-yoko chat
-```
-
-### 方法 2：手动配置
-
-```bash
-# 1. 下载项目
-git clone https://github.com/akun555/yoko-code.git
-
-# 2. 进入目录
-cd yoko-code
-
-# 3. 安装依赖
-pip install rich requests
-
-# 4. 创建 .env 文件
-echo 'OPENROUTER_API_KEY=你的key' > .env
-
-# 5. 给启动脚本加执行权限
-chmod +x yoko
-
-# 6. 启动
 ./yoko chat
 ```
 
-## 🔑 获取 API Key
-
-1. 访问 [OpenRouter](https://openrouter.ai)
-2. 注册/登录账号
-3. 进入 [API Keys](https://openrouter.ai/keys) 页面
-4. 点击 "Create Key"
-5. 复制 Key 并配置到 `.env` 文件
-
-## 🎮 使用方式
+## 根目录脚本
 
 ```bash
-# 启动对话模式
-yoko chat
-
-# 在 YOKO Code 中
-坤哥 ❯ 你好，帮我写个排序算法    # AI 对话
-坤哥 ❯ /help                      # 查看帮助
-坤哥 ❯ /status                    # 查看状态
-坤哥 ❯ /pet adopt dragon 小火龙   # 领养宠物
-坤哥 ❯ !read --path README.md     # 读取文件
-坤哥 ❯ /exit                      # 退出
+./yoko help
+./yoko summary
+./yoko tools
+./yoko commands
+./yoko chat
 ```
 
-## 📋 命令列表
+`./yoko` 会自动以脚本所在目录作为项目根目录，并加载根目录 `.env`。
 
-| 命令 | 缩写 | 说明 |
-|------|------|------|
-| `/help` | `/h` | 显示帮助 |
-| `/tools` | `/t` | 查看工具列表 |
-| `/commands` | `/cmds` | 查看命令列表 |
-| `/status` | `/s` | 查看状态 |
-| `/version` | `/v` | 版本信息 |
-| `/clear` | `/cls` | 清屏 |
-| `/exit` | `/q` | 退出 |
+## 验证命令
 
-### 🐾 宠物系统
+提交前建议运行：
 
-| 命令 | 说明 |
-|------|------|
-| `/pet` | 查看宠物状态 |
-| `/pet adopt [物种] [名字]` | 领养宠物 |
-| `/pet feed` | 喂食 |
-| `/pet play` | 玩耍 |
-| `/pet train` | 训练 |
-| `/pet rest` | 休息 |
-| `/pet skills` | 查看技能 |
-| `/pet help [任务]` | 让宠物帮忙 |
+```bash
+# Python
+python -m compileall -q src tests
+python -m pytest -q
 
-## 🐾 宠物物种
-
-| 物种 | 名称 | 稀有度 | 技能 |
-|------|------|--------|------|
-| 🐱 | 猫咪 | 普通 | debug |
-| 🐶 | 狗狗 | 普通 | code_review |
-| 🐰 | 兔子 | 普通 | refactoring |
-| 🐺 | 狼 | 稀有 | architecture |
-| 🦊 | 狐狸 | 稀有 | security_audit |
-| 🦄 | 独角兽 | 史诗 | ai_suggest |
-| 🐉 | 龙 | 史诗 | auto_fix |
-| 🐼 | 熊猫 | 传说 | translation |
-
-## 📁 项目结构
-
+# Rust
+cd rust
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo build --release
 ```
+
+## 项目结构
+
+```text
 yoko-code/
-├── yoko                  # 启动脚本
-├── .env                  # API Key（不提交到 Git）
-├── .gitignore            # Git 忽略文件
-├── src/
-│   ├── ui.py            # 美颜终端界面
-│   ├── ai_chat.py       # AI 对话模块
-│   ├── api_config.py    # API 配置
-│   ├── pet.py           # 宠物系统
-│   ├── pet_commands.py  # 宠物命令
-│   ├── tools.py         # 工具系统
-│   ├── commands.py      # 命令系统
-│   └── ...
-├── rust/                 # Rust 版本（开发中）
-└── tests/               # 测试
+├── yoko                    # Python 兼容启动脚本
+├── src/                    # Python 原型/移植工作区
+├── tests/                  # Python 测试
+├── rust/                   # Rust 主实现
+│   ├── crates/api          # 模型供应商客户端与 streaming
+│   ├── crates/runtime      # 会话、配置、权限、runtime loop
+│   ├── crates/tools        # 内置工具
+│   ├── crates/commands     # Slash command 注册与处理
+│   ├── crates/plugins      # 插件发现与生命周期
+│   ├── crates/lsp          # LSP 支持
+│   └── crates/claw-cli     # `yoko` CLI binary
+├── .github/workflows/ci.yml
+└── README.md
 ```
 
-## ⚙️ 环境变量
+## 环境变量
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `OPENROUTER_API_KEY` | OpenRouter API Key | 必填 |
-| `OPENROUTER_MODEL` | 使用的模型 | `qwen/qwen3.6-plus-preview:free` |
+| 变量 | 用途 |
+|---|---|
+| `ANTHROPIC_API_KEY` | Rust CLI 的 Anthropic API Key |
+| `ANTHROPIC_BASE_URL` | Rust CLI 的 Anthropic 兼容 endpoint，可选 |
+| `XAI_API_KEY` | Rust CLI 的 xAI/Grok API Key |
+| `XAI_BASE_URL` | Rust CLI 的 xAI/Grok endpoint，可选 |
+| `OPENROUTER_API_KEY` | Python legacy chat 入口使用 |
+| `OPENROUTER_MODEL` | Python legacy chat 入口使用 |
 
-## 🔒 安全提示
+## 安全提示
 
-- ⚠️ **永远不要**把 API Key 提交到 GitHub
-- ✅ 使用 `.env` 文件存储 Key
-- ✅ 确保 `.gitignore` 包含 `.env`
-- ✅ 公开仓库务必检查敏感信息
+- 不要提交 `.env` 或任何 API Key
+- 提交前运行测试和格式化检查
+- 涉及工具执行、文件写入、Shell 命令时，保持最小权限原则
 
-## 🛠️ 依赖
+## License
 
-- Python 3.8+
-- rich
-- requests
-
-## 📚 参考
-
-- Claude Code 官方架构
-- Claw Code 干净重写版
-- OpenRouter API
-
-## 📄 许可证
-
-MIT License
-
----
-
-**YOKO Code** - 坤哥专属的 AI 编程助手 💪
+MIT License，详见 [`LICENSE`](LICENSE)。

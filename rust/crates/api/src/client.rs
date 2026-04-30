@@ -1,6 +1,6 @@
 use crate::error::ApiError;
-use crate::providers::yoko_provider::{self, AuthSource, ClawApiClient};
 use crate::providers::openai_compat::{self, OpenAiCompatClient, OpenAiCompatConfig};
+use crate::providers::yoko_provider::{self, AuthSource, ClawApiClient};
 use crate::providers::{self, Provider, ProviderKind};
 use crate::types::{MessageRequest, MessageResponse, StreamEvent};
 

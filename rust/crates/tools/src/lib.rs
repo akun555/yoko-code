@@ -1,5 +1,17 @@
 #![allow(clippy::too_many_lines)]
 
+//! YOKO Code built-in tools — registry, specs, and execution.
+//!
+//! This crate provides:
+//!
+//! - [`ToolRegistry`] / [`GlobalToolRegistry`]: tool discovery and permission mapping
+//! - [`ToolSpec`]: declarative tool definitions with JSON Schema inputs
+//! - [`mvp_tool_specs`]: the built-in tool catalog (bash, `read_file`, `write_file`, etc.)
+//! - [`execute_tool`]: unified tool dispatch
+//!
+//! External crates primarily interact with [`GlobalToolRegistry`] to
+//! enumerate available tools, check permissions, and execute tool calls.
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -21,18 +33,21 @@ use runtime::{
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+/// Entry in the tool manifest, pairing a name with its source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolManifestEntry {
     pub name: String,
     pub source: ToolSource,
 }
 
+/// Whether a tool is always available or conditionally enabled.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ToolSource {
     Base,
     Conditional,
 }
 
+/// Ordered list of available tools.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ToolRegistry {
     entries: Vec<ToolManifestEntry>,
@@ -50,6 +65,10 @@ impl ToolRegistry {
     }
 }
 
+/// Declarative specification for a built-in tool.
+///
+/// Includes the tool name, description, JSON Schema input contract,
+/// and the minimum [`PermissionMode`] required.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolSpec {
     pub name: &'static str,
@@ -58,6 +77,11 @@ pub struct ToolSpec {
     pub required_permission: PermissionMode,
 }
 
+/// Top-level tool registry that combines built-in tools with plugin-provided tools.
+///
+/// Provides tool enumeration, permission mapping, and unified execution.
+/// Construct via [`GlobalToolRegistry::builtin()`] or
+/// [`GlobalToolRegistry::with_plugin_tools()`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct GlobalToolRegistry {
     plugin_tools: Vec<PluginTool>,

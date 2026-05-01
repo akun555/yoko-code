@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::json::{JsonError, JsonValue};
 use crate::usage::TokenUsage;
 
+/// Role of a message in the conversation.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageRole {
@@ -17,6 +18,10 @@ pub enum MessageRole {
     Tool,
 }
 
+/// A single content block within a conversation message.
+///
+/// Content blocks represent the atomic units of a turn: text from the model,
+/// a tool-use request, or a tool-execution result.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ContentBlock {
@@ -36,6 +41,8 @@ pub enum ContentBlock {
     },
 }
 
+/// A message in the conversation history, consisting of a role, content blocks,
+/// and optional token usage metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ConversationMessage {
     pub role: MessageRole,
@@ -43,6 +50,10 @@ pub struct ConversationMessage {
     pub usage: Option<TokenUsage>,
 }
 
+/// A persisted conversation session, stored as JSON.
+///
+/// Sessions are versioned (currently v1) and contain the full message history
+/// including tool-use and tool-result exchanges.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Session {
     pub version: u32,

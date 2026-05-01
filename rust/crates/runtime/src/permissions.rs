@@ -1,11 +1,27 @@
+//! Tool-execution permission model.
+//!
+//! YOKO Code uses a tiered permission system to gate tool access:
+//!
+//! - **`ReadOnly`**: safe operations (file reads, search)
+//! - **`WorkspaceWrite`**: file modifications within the workspace
+//! - **`DangerFullAccess`**: shell commands, network access
+//! - **Prompt**: requires interactive user confirmation
+//! - **Allow**: explicitly granted by user
+
 use std::collections::BTreeMap;
 
+/// Permission tier for tool execution, ordered from least to most privileged.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PermissionMode {
+    /// Read-only access (file reads, search, web fetch)
     ReadOnly,
+    /// Write access limited to workspace files
     WorkspaceWrite,
+    /// Full access including shell commands
     DangerFullAccess,
+    /// Requires interactive user confirmation
     Prompt,
+    /// Explicitly allowed by the user
     Allow,
 }
 

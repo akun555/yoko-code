@@ -1,3 +1,24 @@
+//! YOKO Code runtime — core session, conversation, and tool-execution engine.
+//!
+//! This crate provides the foundational types and logic for:
+//!
+//! - **Session management**: JSON-persisted conversation state ([`Session`], [`ConversationMessage`])
+//! - **Permission model**: tool-gated access control ([`PermissionMode`], [`PermissionPolicy`])
+//! - **Conversation loop**: API client + tool executor runtime ([`ConversationRuntime`])
+//! - **File operations**: read, write, edit, glob, and grep ([`read_file`], [`write_file`], [`edit_file`])
+//! - **System prompt**: workspace-aware instruction loading ([`load_system_prompt`])
+//! - **MCP support**: Model Context Protocol client and stdio process management
+//! - **OAuth**: PKCE-based authentication flow
+//!
+//! # Example
+//!
+//! ```no_run
+//! use runtime::{Session, ConversationMessage, MessageRole};
+//!
+//! let mut session = Session::new();
+//! session.messages.push(ConversationMessage::user_text("hello"));
+//! ```
+
 mod bash;
 mod bootstrap;
 mod compact;

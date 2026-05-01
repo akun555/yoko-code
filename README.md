@@ -1,7 +1,7 @@
 # YOKO Code
 
 <p align="center">
-  <strong>在终端里用自然语言指挥 AI 读代码、写代码、改 Bug</strong>
+  <strong>跟 AI 聊天，让它帮你写代码、修 Bug、做重构</strong>
 </p>
 
 <p align="center">

@@ -1,11 +1,11 @@
 # YOKO Code
 
 <p align="center">
-  <strong>🚀 坤哥专属的 AI 编程助手 🚀</strong>
+  <strong>本地 AI 编程 Agent CLI</strong>
 </p>
 
 <p align="center">
-  Claude Code inspired 的本地编程 Agent 实验项目，当前主实现位于 Rust workspace。
+  Claude Code inspired 的本地编程 Agent 实验项目，Rust 实现，当前版本 0.1.0。
 </p>
 
 ---

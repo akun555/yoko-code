@@ -1,5 +1,5 @@
 #!/bin/bash
-# YOKO Code - 坤哥专属 AI 编程助手
+# YOKO Code — 本地 AI 编程 Agent CLI
 
 YOKO_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -16,8 +16,7 @@ show_banner() {
     echo ""
     echo " ╭────────────────────────────────────────╮"
     echo " │                                        │"
-    echo " │   🚀 YOKO Code                         │"
-    echo " │   坤哥专属 AI 编程助手                   │"
+    echo " │   YOKO Code — 本地 AI 编程 Agent CLI        │"
     echo " │                                        │"
     echo " ╰────────────────────────────────────────╯"
     echo ""

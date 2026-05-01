@@ -1,11 +1,11 @@
 # YOKO Code
 
 <p align="center">
-  <strong>本地 AI 编程 Agent CLI</strong>
+  <strong>在终端里用自然语言指挥 AI 读代码、写代码、改 Bug</strong>
 </p>
 
 <p align="center">
-  Claude Code inspired 的本地编程 Agent 实验项目，Rust 实现，当前版本 0.1.0。
+  Claude Code inspired · Rust 实现 · v0.1.0
 </p>
 
 ---

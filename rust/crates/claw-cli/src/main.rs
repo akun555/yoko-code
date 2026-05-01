@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_lines, clippy::cast_possible_wrap, clippy::cast_sign_loss, clippy::explicit_counter_loop)]
+
 mod init;
 mod input;
 mod render;

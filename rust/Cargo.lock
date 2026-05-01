@@ -179,24 +179,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
-name = "yoko-cli"
-version = "0.1.0"
-dependencies = [
- "api",
- "commands",
- "compat-harness",
- "crossterm",
- "plugins",
- "pulldown-cmark",
- "runtime",
- "rustyline",
- "serde_json",
- "syntect",
- "tokio",
- "tools",
-]
-
-[[package]]
 name = "clipboard-win"
 version = "5.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2274,6 +2256,24 @@ dependencies = [
  "quote",
  "syn",
  "synstructure",
+]
+
+[[package]]
+name = "yoko-cli"
+version = "0.1.0"
+dependencies = [
+ "api",
+ "commands",
+ "compat-harness",
+ "crossterm",
+ "plugins",
+ "pulldown-cmark",
+ "runtime",
+ "rustyline",
+ "serde_json",
+ "syntect",
+ "tokio",
+ "tools",
 ]
 
 [[package]]

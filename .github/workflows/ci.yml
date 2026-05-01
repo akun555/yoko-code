@@ -32,10 +32,13 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy
 
       - name: Check formatting
         run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --lib --bins -- -D warnings
 
       - name: Run tests
         run: cargo test --workspace -- --test-threads=1

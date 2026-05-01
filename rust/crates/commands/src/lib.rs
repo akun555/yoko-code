@@ -603,7 +603,7 @@ pub fn suggest_slash_commands(input: &str, limit: usize) -> Vec<String> {
         })
         .collect::<Vec<_>>();
 
-    ranked.sort_by(|left, right| left.cmp(right));
+    ranked.sort();
     ranked.dedup_by(|left, right| left.2 == right.2);
     ranked
         .into_iter()
@@ -842,7 +842,7 @@ pub fn handle_branch_slash_command(
             Ok(if trimmed.is_empty() {
                 "Branch\n  Result           no branches found".to_string()
             } else {
-                format!("Branch\n  Result           listed\n\n{}", trimmed)
+                format!("Branch\n  Result           listed\n\n{trimmed}")
             })
         }
         Some("create") => {
@@ -882,7 +882,7 @@ pub fn handle_worktree_slash_command(
             Ok(if trimmed.is_empty() {
                 "Worktree\n  Result           no worktrees found".to_string()
             } else {
-                format!("Worktree\n  Result           listed\n\n{}", trimmed)
+                format!("Worktree\n  Result           listed\n\n{trimmed}")
             })
         }
         Some("add") => {

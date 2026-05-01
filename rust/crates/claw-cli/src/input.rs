@@ -1,3 +1,5 @@
+#![allow(clippy::match_same_arms, clippy::unused_self)]
+
 use std::borrow::Cow;
 use std::io::{self, IsTerminal, Write};
 
@@ -372,20 +374,20 @@ impl LineEditor {
 
         if key.modifiers.contains(KeyModifiers::CONTROL) {
             match key.code {
-                KeyCode::Char('c') | KeyCode::Char('C') => {
+                KeyCode::Char('c' | 'C') => {
                     return if session.has_input() {
                         KeyAction::Cancel
                     } else {
                         KeyAction::Exit
                     };
                 }
-                KeyCode::Char('j') | KeyCode::Char('J') => {
+                KeyCode::Char('j' | 'J') => {
                     if session.mode != EditorMode::Normal && session.mode != EditorMode::Visual {
                         self.insert_active_text(session, "\n");
                     }
                     return KeyAction::Continue;
                 }
-                KeyCode::Char('d') | KeyCode::Char('D') => {
+                KeyCode::Char('d' | 'D') => {
                     if session.current_len() == 0 {
                         return KeyAction::Exit;
                     }
@@ -451,8 +453,7 @@ impl LineEditor {
 
     fn handle_char(&mut self, session: &mut EditSession, ch: char) {
         match session.mode {
-            EditorMode::Plain => self.insert_active_char(session, ch),
-            EditorMode::Insert => self.insert_active_char(session, ch),
+            EditorMode::Plain | EditorMode::Insert => self.insert_active_char(session, ch),
             EditorMode::Normal => self.handle_normal_char(session, ch),
             EditorMode::Visual => self.handle_visual_char(session, ch),
             EditorMode::Command => self.insert_active_char(session, ch),
@@ -750,12 +751,9 @@ impl LineEditor {
             return;
         }
 
-        let next_index = match session.history_index {
-            Some(index) => index.saturating_sub(1),
-            None => {
-                session.history_backup = Some(session.text.clone());
-                self.history.len() - 1
-            }
+        let next_index = if let Some(index) = session.history_index { index.saturating_sub(1) } else {
+            session.history_backup = Some(session.text.clone());
+            self.history.len() - 1
         };
 
         session.history_index = Some(next_index);

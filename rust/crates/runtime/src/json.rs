@@ -1,19 +1,22 @@
+#![allow(clippy::float_cmp, clippy::cast_possible_truncation)]
+
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum JsonValue {
     Null,
     Bool(bool),
-    Number(i64),
+    Number(f64),
     String(String),
     Array(Vec<JsonValue>),
     Object(BTreeMap<String, JsonValue>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct JsonError {
     message: String,
+    source: Option<Box<dyn std::error::Error + Send + Sync>>,
 }
 
 impl JsonError {
@@ -21,6 +24,7 @@ impl JsonError {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
+            source: None,
         }
     }
 }
@@ -31,7 +35,11 @@ impl Display for JsonError {
     }
 }
 
-impl std::error::Error for JsonError {}
+impl std::error::Error for JsonError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.source.as_ref().map(|e| e.as_ref() as &dyn std::error::Error)
+    }
+}
 
 impl JsonValue {
     #[must_use]
@@ -39,7 +47,13 @@ impl JsonValue {
         match self {
             Self::Null => "null".to_string(),
             Self::Bool(value) => value.to_string(),
-            Self::Number(value) => value.to_string(),
+            Self::Number(value) => {
+                if *value == (*value).trunc() && value.is_finite() {
+                    format!("{}", *value as i64)
+                } else {
+                    value.to_string()
+                }
+            }
             Self::String(value) => render_string(value),
             Self::Array(values) => {
                 let rendered = values
@@ -105,6 +119,11 @@ impl JsonValue {
 
     #[must_use]
     pub fn as_i64(&self) -> Option<i64> {
+        self.as_f64().map(|v| v as i64)
+    }
+
+    #[must_use]
+    pub fn as_f64(&self) -> Option<f64> {
         match self {
             Self::Number(value) => Some(*value),
             _ => None,
@@ -266,7 +285,7 @@ impl<'a> Parser<'a> {
         Ok(JsonValue::Object(entries))
     }
 
-    fn parse_number(&mut self) -> Result<i64, JsonError> {
+    fn parse_number(&mut self) -> Result<f64, JsonError> {
         let mut value = String::new();
         if self.try_consume('-') {
             value.push('-');
@@ -277,12 +296,43 @@ impl<'a> Parser<'a> {
             self.index += 1;
         }
 
+        // Fractional part
+        if self.try_consume('.') {
+            value.push('.');
+            let mut has_digit = false;
+            while let Some(ch @ '0'..='9') = self.peek() {
+                value.push(ch);
+                self.index += 1;
+                has_digit = true;
+            }
+            if !has_digit {
+                return Err(JsonError::new("invalid number: expected digit after decimal point"));
+            }
+        }
+
+        // Exponent part
+        if matches!(self.peek(), Some('e' | 'E')) {
+            value.push(self.next().unwrap());
+            if matches!(self.peek(), Some('+' | '-')) {
+                value.push(self.next().unwrap());
+            }
+            let mut has_digit = false;
+            while let Some(ch @ '0'..='9') = self.peek() {
+                value.push(ch);
+                self.index += 1;
+                has_digit = true;
+            }
+            if !has_digit {
+                return Err(JsonError::new("invalid number: expected digit in exponent"));
+            }
+        }
+
         if value.is_empty() || value == "-" {
             return Err(JsonError::new("invalid number"));
         }
 
         value
-            .parse::<i64>()
+            .parse::<f64>()
             .map_err(|_| JsonError::new("number out of range"))
     }
 
@@ -340,7 +390,7 @@ mod tests {
         object.insert(
             "items".to_string(),
             JsonValue::Array(vec![
-                JsonValue::Number(4),
+                JsonValue::Number(4.0),
                 JsonValue::String("ok".to_string()),
             ]),
         );
@@ -349,6 +399,24 @@ mod tests {
         let parsed = JsonValue::parse(&rendered).expect("json should parse");
 
         assert_eq!(parsed.as_object().expect("object").len(), 2);
+    }
+
+    #[test]
+    fn parses_floating_point_numbers() {
+        let parsed = JsonValue::parse("3.14").expect("parse float");
+        assert!((parsed.as_f64().unwrap() - 3.14).abs() < 0.001);
+
+        let parsed = JsonValue::parse("-2.5e3").expect("parse exponent");
+        assert!((parsed.as_f64().unwrap() - (-2500.0)).abs() < 1.0);
+
+        let parsed = JsonValue::parse("42").expect("parse int");
+        assert_eq!(parsed.as_i64().unwrap(), 42);
+
+        let rendered = JsonValue::Number(3.14).render();
+        assert_eq!(rendered, "3.14");
+
+        let rendered = JsonValue::Number(7.0).render();
+        assert_eq!(rendered, "7");
     }
 
     #[test]

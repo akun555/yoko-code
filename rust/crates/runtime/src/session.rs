@@ -66,7 +66,15 @@ impl Display for SessionError {
     }
 }
 
-impl std::error::Error for SessionError {}
+impl std::error::Error for SessionError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(error) => Some(error),
+            Self::Json(error) => Some(error),
+            Self::Format(_) => None,
+        }
+    }
+}
 
 impl From<std::io::Error> for SessionError {
     fn from(value: std::io::Error) -> Self {
@@ -104,7 +112,7 @@ impl Session {
         let mut object = BTreeMap::new();
         object.insert(
             "version".to_string(),
-            JsonValue::Number(i64::from(self.version)),
+            JsonValue::Number(f64::from(self.version)),
         );
         object.insert(
             "messages".to_string(),
@@ -332,19 +340,19 @@ fn usage_to_json(usage: TokenUsage) -> JsonValue {
     let mut object = BTreeMap::new();
     object.insert(
         "input_tokens".to_string(),
-        JsonValue::Number(i64::from(usage.input_tokens)),
+        JsonValue::Number(f64::from(usage.input_tokens)),
     );
     object.insert(
         "output_tokens".to_string(),
-        JsonValue::Number(i64::from(usage.output_tokens)),
+        JsonValue::Number(f64::from(usage.output_tokens)),
     );
     object.insert(
         "cache_creation_input_tokens".to_string(),
-        JsonValue::Number(i64::from(usage.cache_creation_input_tokens)),
+        JsonValue::Number(f64::from(usage.cache_creation_input_tokens)),
     );
     object.insert(
         "cache_read_input_tokens".to_string(),
-        JsonValue::Number(i64::from(usage.cache_read_input_tokens)),
+        JsonValue::Number(f64::from(usage.cache_read_input_tokens)),
     );
     JsonValue::Object(object)
 }

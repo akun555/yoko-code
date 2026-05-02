@@ -1124,8 +1124,7 @@ fn branch_exists(cwd: &Path, branch: &str) -> bool {
         ])
         .current_dir(cwd)
         .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|output| output.status.success())
 }
 
 fn current_branch(cwd: &Path) -> io::Result<String> {
@@ -1142,8 +1141,7 @@ fn command_exists(name: &str) -> bool {
     Command::new(name)
         .arg("--version")
         .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|output| output.status.success())
 }
 
 fn write_temp_text_file(prefix: &str, extension: &str, contents: &str) -> io::Result<PathBuf> {

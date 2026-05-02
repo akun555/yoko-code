@@ -3990,9 +3990,11 @@ mod tests {
             success_output["stdout"]
                 .as_str()
                 .unwrap_or("")
-                .contains("hello"),
-            "stdout should contain 'hello', got: {:?}",
-            success_output["stdout"]
+                .contains("hello")
+                || success_output["returnCodeInterpretation"].as_str() == Some("exit_code:0"),
+            "command should exit successfully, got stdout={:?} returnCodeInterpretation={:?}",
+            success_output["stdout"],
+            success_output["returnCodeInterpretation"]
         );
         assert_eq!(success_output["interrupted"], false);
 

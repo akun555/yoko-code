@@ -407,8 +407,8 @@ mod tests {
 
     #[test]
     fn parses_floating_point_numbers() {
-        let parsed = JsonValue::parse("3.14").expect("parse float");
-        assert!((parsed.as_f64().unwrap() - 3.14).abs() < 0.001);
+        let parsed = JsonValue::parse("3.17").expect("parse float");
+        assert!((parsed.as_f64().unwrap() - 3.17).abs() < 0.001);
 
         let parsed = JsonValue::parse("-2.5e3").expect("parse exponent");
         assert!((parsed.as_f64().unwrap() - (-2500.0)).abs() < 1.0);
@@ -416,8 +416,8 @@ mod tests {
         let parsed = JsonValue::parse("42").expect("parse int");
         assert_eq!(parsed.as_i64().unwrap(), 42);
 
-        let rendered = JsonValue::Number(3.14).render();
-        assert_eq!(rendered, "3.14");
+        let rendered = JsonValue::Number(3.17).render();
+        assert_eq!(rendered, "3.17");
 
         let rendered = JsonValue::Number(7.0).render();
         assert_eq!(rendered, "7");

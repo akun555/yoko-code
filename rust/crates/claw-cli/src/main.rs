@@ -1932,15 +1932,14 @@ fn list_managed_sessions() -> Result<Vec<ManagedSessionSummary>, Box<dyn std::er
             message_count,
         });
     }
-    sessions.sort_by(|left, right| right.modified_epoch_secs.cmp(&left.modified_epoch_secs));
+    sessions.sort_by_key(|session| std::cmp::Reverse(session.modified_epoch_secs));
     Ok(sessions)
 }
 
 fn format_relative_timestamp(epoch_secs: u64) -> String {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_secs())
-        .unwrap_or(epoch_secs);
+        .map_or(epoch_secs, |duration| duration.as_secs());
     let elapsed = now.saturating_sub(epoch_secs);
     match elapsed {
         0..=59 => format!("{elapsed}s ago"),
@@ -2238,7 +2237,7 @@ fn render_memory_report() -> Result<String, Box<dyn std::error::Error>> {
             } else {
                 preview
             };
-            lines.push(format!("  {}. {}", index + 1, file.path.display(),));
+            lines.push(format!("  {}. {}", index + 1, file.path.display()));
             lines.push(format!(
                 "     lines={} preview={}",
                 file.content.lines().count(),

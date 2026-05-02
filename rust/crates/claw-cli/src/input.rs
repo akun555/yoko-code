@@ -751,7 +751,9 @@ impl LineEditor {
             return;
         }
 
-        let next_index = if let Some(index) = session.history_index { index.saturating_sub(1) } else {
+        let next_index = if let Some(index) = session.history_index {
+            index.saturating_sub(1)
+        } else {
             session.history_backup = Some(session.text.clone());
             self.history.len() - 1
         };

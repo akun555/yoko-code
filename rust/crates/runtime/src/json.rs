@@ -37,7 +37,9 @@ impl Display for JsonError {
 
 impl std::error::Error for JsonError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.source.as_ref().map(|e| e.as_ref() as &dyn std::error::Error)
+        self.source
+            .as_ref()
+            .map(|e| e.as_ref() as &dyn std::error::Error)
     }
 }
 
@@ -306,7 +308,9 @@ impl<'a> Parser<'a> {
                 has_digit = true;
             }
             if !has_digit {
-                return Err(JsonError::new("invalid number: expected digit after decimal point"));
+                return Err(JsonError::new(
+                    "invalid number: expected digit after decimal point",
+                ));
             }
         }
 

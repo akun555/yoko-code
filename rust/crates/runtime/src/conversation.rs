@@ -52,7 +52,10 @@ impl ToolError {
     }
 
     #[must_use]
-    pub fn with_source(message: impl Into<String>, source: impl Into<Box<dyn std::error::Error + Send + Sync>>) -> Self {
+    pub fn with_source(
+        message: impl Into<String>,
+        source: impl Into<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
         Self {
             message: message.into(),
             source: Some(source.into()),
@@ -68,7 +71,9 @@ impl Display for ToolError {
 
 impl std::error::Error for ToolError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.source.as_ref().map(|e| e.as_ref() as &dyn std::error::Error )
+        self.source
+            .as_ref()
+            .map(|e| e.as_ref() as &dyn std::error::Error)
     }
 }
 
@@ -88,7 +93,10 @@ impl RuntimeError {
     }
 
     #[must_use]
-    pub fn with_source(message: impl Into<String>, source: impl Into<Box<dyn std::error::Error + Send + Sync>>) -> Self {
+    pub fn with_source(
+        message: impl Into<String>,
+        source: impl Into<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
         Self {
             message: message.into(),
             source: Some(source.into()),
@@ -104,7 +112,9 @@ impl Display for RuntimeError {
 
 impl std::error::Error for RuntimeError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.source.as_ref().map(|e| e.as_ref() as &dyn std::error::Error )
+        self.source
+            .as_ref()
+            .map(|e| e.as_ref() as &dyn std::error::Error)
     }
 }
 

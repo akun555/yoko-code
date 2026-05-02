@@ -3983,8 +3983,8 @@ mod tests {
 
     #[test]
     fn bash_tool_reports_success_exit_failure_timeout_and_background() {
-        let success = execute_tool("bash", &json!({ "command": "echo hello" }))
-            .expect("bash should succeed");
+        let success =
+            execute_tool("bash", &json!({ "command": "echo hello" })).expect("bash should succeed");
         let success_output: serde_json::Value = serde_json::from_str(&success).expect("json");
         assert_eq!(success_output["stdout"], "hello\n");
         assert_eq!(success_output["interrupted"], false);
